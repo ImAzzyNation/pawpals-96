@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
+import NavigationMenu from '../components/NavigationMenu';
 import PetCard from '../components/PetCard';
 import ProductCard from '../components/ProductCard';
 import { Button } from '../components/ui/button';
@@ -22,6 +23,9 @@ const Index = () => {
       
       <main className="flex-grow">
         <HeroSection />
+        
+        {/* Navigation Menu */}
+        <NavigationMenu />
         
         {/* Lost Pets Section */}
         <section className="py-16 bg-white">

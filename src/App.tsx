@@ -16,6 +16,7 @@ import PostLostPet from "./pages/PostLostPet";
 import PostAdoption from "./pages/PostAdoption";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/post-lost-pet" element={<PostLostPet />} />
           <Route path="/post-adoption" element={<PostAdoption />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/help" element={<Help />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

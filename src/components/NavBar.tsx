@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { 
@@ -8,11 +8,51 @@ import {
   ShoppingBag, 
   User, 
   Menu, 
-  X
+  X,
+  LogOut
 } from 'lucide-react';
+import { authService } from '@/services/dbService';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from './ui/dropdown-menu';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
+  
+  // Update current user when auth state changes
+  useEffect(() => {
+    const checkUser = () => {
+      setCurrentUser(authService.getCurrentUser());
+    };
+    
+    window.addEventListener('storage', checkUser);
+    
+    return () => {
+      window.removeEventListener('storage', checkUser);
+    };
+  }, []);
+  
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    // Force a reload to ensure all user state is cleared
+    window.location.href = '/';
+  };
+  
+  // Get user initials for avatar fallback
+  const getUserInitials = () => {
+    if (!currentUser) return '';
+    const firstInitial = currentUser.firstName ? currentUser.firstName[0] : '';
+    const lastInitial = currentUser.lastName ? currentUser.lastName[0] : '';
+    return (firstInitial + lastInitial).toUpperCase();
+  };
 
   return (
     <header className="w-full bg-white shadow-sm sticky top-0 z-50">
@@ -45,12 +85,46 @@ const NavBar = () => {
             <Button variant="ghost" size="icon" className="rounded-full text-gray-700">
               <ShoppingBag size={20} />
             </Button>
-            <Button asChild variant="outline" className="gap-2 border-pawgreen-500 text-pawgreen-500 hover:bg-pawgreen-50">
-              <Link to="/login">
-                <User size={18} />
-                <span>Login</span>
-              </Link>
-            </Button>
+            
+            {/* Show avatar dropdown if logged in, otherwise show login button */}
+            {currentUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar>
+                      <AvatarImage src="/placeholder.svg" alt={`${currentUser.firstName} ${currentUser.lastName}`} />
+                      <AvatarFallback className="bg-pawgreen-100 text-pawgreen-800">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    <span>My Orders</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="outline" className="gap-2 border-pawgreen-500 text-pawgreen-500 hover:bg-pawgreen-50">
+                <Link to="/login">
+                  <User size={18} />
+                  <span>Login</span>
+                </Link>
+              </Button>
+            )}
           </div>
           
           {/* Mobile Menu Button */}
@@ -95,12 +169,29 @@ const NavBar = () => {
               <Button variant="ghost" size="icon" className="rounded-full text-gray-700">
                 <ShoppingBag size={20} />
               </Button>
-              <Button asChild variant="outline" className="gap-2 border-pawgreen-500 text-pawgreen-500 hover:bg-pawgreen-50">
-                <Link to="/login">
-                  <User size={18} />
-                  <span>Login</span>
-                </Link>
-              </Button>
+              
+              {/* Mobile Login/Avatar */}
+              {currentUser ? (
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src="/placeholder.svg" alt={`${currentUser.firstName} ${currentUser.lastName}`} />
+                    <AvatarFallback className="bg-pawgreen-100 text-pawgreen-800">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button variant="ghost" onClick={handleLogout} className="text-red-500">
+                    <LogOut size={18} />
+                    <span className="ml-1">Log out</span>
+                  </Button>
+                </div>
+              ) : (
+                <Button asChild variant="outline" className="gap-2 border-pawgreen-500 text-pawgreen-500 hover:bg-pawgreen-50">
+                  <Link to="/login">
+                    <User size={18} />
+                    <span>Login</span>
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         )}

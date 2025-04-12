@@ -1,23 +1,49 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, MapPin } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import PetCard from '../components/PetCard';
-import { lostPets } from '../data/mockData';
+import { getLostPets } from '../services/dbConnection';
+import { Pet } from '../services/dbService';
 
 const LostPets = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [petType, setPetType] = useState('all');
   const [location, setLocation] = useState('');
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        setLoading(true);
+        const data = await getLostPets();
+        setPets(data);
+      } catch (error) {
+        console.error('Error fetching lost pets:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load lost pets. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPets();
+  }, [toast]);
 
   // Filter pets based on search criteria
-  const filteredPets = lostPets.filter(pet => {
+  const filteredPets = pets.filter(pet => {
     const matchesSearch = pet.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                        pet.breed.toLowerCase().includes(searchTerm.toLowerCase());
     

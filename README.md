@@ -1,73 +1,56 @@
-# Welcome to your Lovable project
 
-## Project info
+# PawPals - Pet Adoption & Lost Pet Finder
 
-**URL**: https://lovable.dev/projects/ad852b5f-ef38-4daf-ae5e-3fd79dd98883
+A React application for pet adoption and lost pet reporting.
 
-## How can I edit this code?
+## Browser Development Mode
 
-There are several ways of editing your application.
+The application currently runs in browser-compatible mode using mock data. The database connection is simulated for frontend development.
 
-**Use Lovable**
+## Database Setup (Server Deployment)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ad852b5f-ef38-4daf-ae5e-3fd79dd98883) and start prompting.
+For server deployment with a real MySQL database:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Install XAMPP or another MySQL server solution
+2. Create a database named `pawpals`
+3. Import the database schema from `database_setup.sql`
+4. Update the `dbConnection.ts` file with your MySQL server credentials
 
-**Use your preferred IDE**
+### Database Configuration
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+When moving to production, replace the mock implementation in `dbConnection.ts` with:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```typescript
+import mysql from 'mysql2/promise';
 
-Follow these steps:
+// Connection pool configuration
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '', // Default for XAMPP is empty
+  database: 'pawpals',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+// Simple query executor
+export async function executeQuery<T>(query: string, params?: any[]): Promise<T> {
+  try {
+    const [rows] = await pool.execute(query, params || []);
+    return rows as T;
+  } catch (error) {
+    console.error('Database error:', error);
+    throw error;
+  }
+}
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Running the Application
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/ad852b5f-ef38-4daf-ae5e-3fd79dd98883) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The application will be available at http://localhost:8080.

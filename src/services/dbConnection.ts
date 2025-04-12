@@ -1,40 +1,31 @@
 
-import mysql from 'mysql2/promise';
+import { lostPets, adoptionPets } from '../data/mockData';
 
-// Connection pool configuration
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '', // Default for XAMPP is empty
-  database: 'pawpals',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
-
-// Simple query executor
+// Simple query executor - browser-compatible mock version
 export async function executeQuery<T>(query: string, params?: any[]): Promise<T> {
-  try {
-    const [rows] = await pool.execute(query, params || []);
-    return rows as T;
-  } catch (error) {
-    console.error('Database error:', error);
-    throw error;
-  }
+  console.log('Mock query executed:', query, params);
+  // In a browser environment, we'll simulate the database with mock data
+  return [] as unknown as T;
 }
 
 // Helper for lost pets
 export async function getLostPets() {
-  return executeQuery<any[]>(`
-    SELECT * FROM pets WHERE type = 'lost' ORDER BY date_reported DESC
-  `);
+  console.log('Fetching lost pets from mock data');
+  // Return mock data that matches the database structure
+  return Promise.resolve(lostPets.map(pet => ({
+    ...pet,
+    type: 'lost',
+  })));
 }
 
 // Helper for adoption pets
 export async function getAdoptionPets() {
-  return executeQuery<any[]>(`
-    SELECT * FROM pets WHERE type = 'adopt' ORDER BY created_at DESC
-  `);
+  console.log('Fetching adoption pets from mock data');
+  // Return mock data that matches the database structure
+  return Promise.resolve(adoptionPets.map(pet => ({
+    ...pet,
+    type: 'adopt',
+  })));
 }
 
 // Helper to add a new pet
@@ -53,12 +44,7 @@ export async function addPet(petData: {
   shelter?: string;
   adoption_fee?: string;
 }) {
-  const fields = Object.keys(petData).join(', ');
-  const placeholders = Object.keys(petData).map(() => '?').join(', ');
-  const values = Object.values(petData);
-  
-  return executeQuery<any>(
-    `INSERT INTO pets (${fields}) VALUES (${placeholders})`,
-    values
-  );
+  console.log('Mock adding pet to database:', petData);
+  // Simulate adding to database with a successful response
+  return Promise.resolve({ insertId: Math.floor(Math.random() * 1000) });
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, PawPrint } from 'lucide-react';
@@ -20,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+import { authService } from '@/services/dbService';
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -43,6 +43,7 @@ const formSchema = z.object({
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -57,21 +58,41 @@ const SignUp = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    // TODO: Add signup logic
+    setIsLoading(true);
     
-    toast({
-      title: "Registration Successful",
-      description: "Welcome to PawPals! Your account has been created.",
-    });
-    
-    // Redirect to homepage after successful registration
-    setTimeout(() => {
-      navigate('/');
-    }, 500);
+    try {
+      // Using our auth service to signup
+      await authService.signup({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password
+      });
+      
+      toast({
+        title: "Registration Successful",
+        description: "Welcome to PawPals! Your account has been created.",
+      });
+      
+      // Redirect to homepage after successful registration
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "There was a problem creating your account. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
+  
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -217,8 +238,9 @@ const SignUp = () => {
                   <Button 
                     type="submit" 
                     className="w-full bg-pawgreen-500 hover:bg-pawgreen-600"
+                    disabled={isLoading}
                   >
-                    Create Account
+                    {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
               </Form>

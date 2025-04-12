@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Facebook, Github, PawPrint } from 'lucide-react';
@@ -21,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+import { authService } from '@/services/dbService';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -34,6 +34,7 @@ const formSchema = z.object({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -46,19 +47,33 @@ const Login = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    // TODO: Add login logic
+    setIsLoading(true);
     
-    toast({
-      title: "Login Successful",
-      description: "Welcome back to PawPals!",
-    });
-    
-    // Redirect to homepage after successful login
-    setTimeout(() => {
-      navigate('/');
-    }, 500);
+    try {
+      // Using our auth service to login
+      await authService.login(values.email, values.password);
+      
+      toast({
+        title: "Login Successful",
+        description: "Welcome back to PawPals!",
+      });
+      
+      // Redirect to homepage after successful login
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid email or password. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -156,8 +171,9 @@ const Login = () => {
                   <Button 
                     type="submit" 
                     className="w-full bg-pawgreen-500 hover:bg-pawgreen-600"
+                    disabled={isLoading}
                   >
-                    Sign In
+                    {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
               </Form>

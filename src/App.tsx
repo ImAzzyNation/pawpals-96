@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import PostLostPet from "./pages/PostLostPet";
 import PostAdoption from "./pages/PostAdoption";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/signup" element={<SignUp />} />
           <Route path="/post-lost-pet" element={<PostLostPet />} />
           <Route path="/post-adoption" element={<PostAdoption />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

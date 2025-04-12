@@ -102,9 +102,11 @@ const NavBar = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <ShoppingBag className="mr-2 h-4 w-4" />
@@ -179,6 +181,9 @@ const NavBar = () => {
                       {getUserInitials()}
                     </AvatarFallback>
                   </Avatar>
+                  <Link to="/profile" className="text-pawgreen-600 font-medium">
+                    Profile
+                  </Link>
                   <Button variant="ghost" onClick={handleLogout} className="text-red-500">
                     <LogOut size={18} />
                     <span className="ml-1">Log out</span>

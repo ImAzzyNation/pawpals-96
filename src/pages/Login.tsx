@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Facebook, Github, PawPrint } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -35,6 +35,7 @@ const formSchema = z.object({
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,6 +54,11 @@ const Login = () => {
       title: "Login Successful",
       description: "Welcome back to PawPals!",
     });
+    
+    // Redirect to homepage after successful login
+    setTimeout(() => {
+      navigate('/');
+    }, 500);
   }
 
   return (

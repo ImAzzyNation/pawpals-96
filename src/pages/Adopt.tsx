@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Filter, MapPin, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -157,6 +158,17 @@ const Adopt = () => {
                 </div>
               )}
             </div>
+          </div>
+        </section>
+        
+        {/* Add Post Pet for Adoption button */}
+        <section className="py-6 bg-white border-b">
+          <div className="paw-container flex justify-center">
+            <Button asChild className="bg-pawgreen-500 hover:bg-pawgreen-600">
+              <Link to="/post-adoption">
+                Post a Pet for Adoption
+              </Link>
+            </Button>
           </div>
         </section>
         

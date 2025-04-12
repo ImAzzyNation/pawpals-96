@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Filter, MapPin } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -47,9 +48,9 @@ const LostPets = () => {
             
             {/* Post Lost Pet Button */}
             <Button asChild className="bg-pawgreen-500 hover:bg-pawgreen-600 rounded-full">
-              <a href="/post-lost-pet">
+              <Link to="/post-lost-pet">
                 Report a Lost Pet
-              </a>
+              </Link>
             </Button>
           </div>
         </section>
@@ -176,9 +177,9 @@ const LostPets = () => {
               We'll help spread the word in our community of pet lovers.
             </p>
             <Button asChild className="bg-pawgreen-500 hover:bg-pawgreen-600">
-              <a href="/post-lost-pet">
+              <Link to="/post-lost-pet">
                 Report Your Lost Pet
-              </a>
+              </Link>
             </Button>
           </div>
         </section>

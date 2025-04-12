@@ -1,5 +1,6 @@
 
 import { lostPets, adoptionPets } from '../data/mockData';
+import { Pet } from '../services/dbService';
 
 // Simple query executor - browser-compatible mock version
 export async function executeQuery<T>(query: string, params?: any[]): Promise<T> {
@@ -9,22 +10,40 @@ export async function executeQuery<T>(query: string, params?: any[]): Promise<T>
 }
 
 // Helper for lost pets
-export async function getLostPets() {
+export async function getLostPets(): Promise<Pet[]> {
   console.log('Fetching lost pets from mock data');
   // Return mock data that matches the database structure
   return Promise.resolve(lostPets.map(pet => ({
-    ...pet,
-    type: 'lost',
+    id: pet.id,
+    name: pet.name,
+    image: pet.image,
+    breed: pet.breed,
+    age: pet.age,
+    location: pet.location,
+    type: pet.type as 'lost' | 'adopt', // Ensure type is properly cast to union type
+    date: pet.date,
+    description: pet.description,
+    contactName: pet.contactName,
+    contactEmail: pet.contactEmail,
+    contactPhone: pet.contactPhone
   })));
 }
 
 // Helper for adoption pets
-export async function getAdoptionPets() {
+export async function getAdoptionPets(): Promise<Pet[]> {
   console.log('Fetching adoption pets from mock data');
   // Return mock data that matches the database structure
   return Promise.resolve(adoptionPets.map(pet => ({
-    ...pet,
-    type: 'adopt',
+    id: pet.id,
+    name: pet.name,
+    image: pet.image,
+    breed: pet.breed,
+    age: pet.age,
+    location: pet.location,
+    type: pet.type as 'lost' | 'adopt', // Ensure type is properly cast to union type
+    description: pet.description,
+    shelter: pet.shelter,
+    adoptionFee: pet.adoptionFee
   })));
 }
 

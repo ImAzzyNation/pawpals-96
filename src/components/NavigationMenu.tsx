@@ -53,9 +53,9 @@ const NavigationMenu = () => {
             {/* Central dog image */}
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 max-w-xs mx-auto">
               <img 
-                src="/lovable-uploads/40deaa53-36ca-4315-b5e3-dabb9f9742b3.png" 
-                alt="Dog" 
-                className="w-full"
+                src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" 
+                alt="Cute Golden Retriever" 
+                className="w-full rounded-full border-4 border-pawgreen-500 shadow-lg"
               />
             </div>
             

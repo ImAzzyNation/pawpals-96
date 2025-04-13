@@ -1,19 +1,97 @@
 
-import { lostPets, adoptionPets } from '../data/mockData';
+import mysql from 'mysql2/promise';
 import { Pet, User, Product } from '../services/dbService';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-// Simulate a database connection
+// Database configuration
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'pawpals',
+};
+
+// Media storage configuration
+const UPLOAD_DIR = process.env.UPLOAD_DIR || 'public/uploads';
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Ensure upload directory exists
+if (typeof window === 'undefined' && !fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+
+// Handle file uploads
+export const saveMedia = async (file: File): Promise<string> => {
+  try {
+    // For browser environment, use a different approach
+    if (typeof window !== 'undefined') {
+      // In browser, return a temporary URL
+      console.log('Simulating file upload in browser:', file.name);
+      return URL.createObjectURL(file);
+    }
+    
+    // Server-side file handling
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error('File size exceeds the limit');
+    }
+    
+    const fileExtension = path.extname(file.name);
+    const fileName = `${uuidv4()}${fileExtension}`;
+    const filePath = path.join(UPLOAD_DIR, fileName);
+    
+    // Write file to disk
+    const buffer = Buffer.from(await file.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+    
+    return `/uploads/${fileName}`;
+  } catch (error) {
+    console.error('Error saving media:', error);
+    throw error;
+  }
+};
+
+// Database connection class
 class DatabaseConnection {
   private static instance: DatabaseConnection;
+  private pool: mysql.Pool | null = null;
   private connected: boolean = false;
   
   private constructor() {
     console.log('Initializing database connection...');
-    // In a real implementation, we would connect to MySQL here
-    this.connected = true;
+    this.initializeConnection();
   }
   
-  // Singleton pattern to ensure only one database connection
+  // Initialize connection pool
+  private async initializeConnection() {
+    try {
+      // In a browser environment, we'll simulate the connection
+      if (typeof window !== 'undefined') {
+        console.log('Running in browser, simulating database connection');
+        this.connected = true;
+        return;
+      }
+      
+      // Server-side MySQL connection
+      this.pool = mysql.createPool({
+        ...dbConfig,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+      });
+      
+      // Test the connection
+      await this.pool.getConnection();
+      this.connected = true;
+      console.log('Database connection successful');
+    } catch (error) {
+      console.error('Database connection error:', error);
+      this.connected = false;
+    }
+  }
+  
+  // Singleton pattern
   public static getInstance(): DatabaseConnection {
     if (!DatabaseConnection.instance) {
       DatabaseConnection.instance = new DatabaseConnection();
@@ -26,49 +104,72 @@ class DatabaseConnection {
     return this.connected;
   }
   
-  // Simple query executor - browser-compatible mock version
+  // Execute query
   public async executeQuery<T>(query: string, params?: any[]): Promise<T> {
-    console.log('Executing query:', query, params);
-    // In a browser environment, we'll simulate the database with mock data
-    return [] as unknown as T;
+    if (typeof window !== 'undefined') {
+      console.log('Simulating query execution in browser:', query, params);
+      return [] as unknown as T;
+    }
+    
+    if (!this.pool) {
+      throw new Error('Database connection not initialized');
+    }
+    
+    try {
+      console.log('Executing query:', query);
+      const [results] = await this.pool.execute(query, params || []);
+      return results as unknown as T;
+    } catch (error) {
+      console.error('Query execution error:', error);
+      throw error;
+    }
   }
   
   // Helper for lost pets
   public async getLostPets(): Promise<Pet[]> {
-    console.log('Fetching lost pets from database');
-    // Return mock data that matches the database structure
-    return Promise.resolve(lostPets.map(pet => ({
-      id: pet.id,
-      name: pet.name,
-      image: pet.image,
-      breed: pet.breed,
-      age: pet.age,
-      location: pet.location,
-      type: pet.type as 'lost' | 'adopt',
-      date: pet.date,
-      description: pet.description,
-      contactName: pet.contactName,
-      contactEmail: pet.contactEmail,
-      contactPhone: pet.contactPhone
-    })));
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Fetching lost pets (browser simulation)');
+        // Return empty array in browser environment for now
+        return [];
+      }
+      
+      const query = `
+        SELECT 
+          id, name, image, breed, age, location, 'lost' as type, 
+          date, description, contact_name as contactName, 
+          contact_email as contactEmail, contact_phone as contactPhone
+        FROM lost_pets
+      `;
+      
+      return this.executeQuery<Pet[]>(query);
+    } catch (error) {
+      console.error('Error fetching lost pets:', error);
+      return [];
+    }
   }
   
   // Helper for adoption pets
   public async getAdoptionPets(): Promise<Pet[]> {
-    console.log('Fetching adoption pets from database');
-    // Return mock data that matches the database structure
-    return Promise.resolve(adoptionPets.map(pet => ({
-      id: pet.id,
-      name: pet.name,
-      image: pet.image,
-      breed: pet.breed,
-      age: pet.age,
-      location: pet.location,
-      type: pet.type as 'lost' | 'adopt',
-      description: pet.description,
-      shelter: pet.shelter,
-      adoptionFee: pet.adoptionFee
-    })));
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Fetching adoption pets (browser simulation)');
+        // Return empty array in browser environment for now
+        return [];
+      }
+      
+      const query = `
+        SELECT 
+          id, name, image, breed, age, location, 'adopt' as type,
+          description, shelter, adoption_fee as adoptionFee
+        FROM adoption_pets
+      `;
+      
+      return this.executeQuery<Pet[]>(query);
+    } catch (error) {
+      console.error('Error fetching adoption pets:', error);
+      return [];
+    }
   }
   
   // Helper to add a new pet
@@ -87,40 +188,117 @@ class DatabaseConnection {
     shelter?: string;
     adoption_fee?: string;
   }): Promise<{ insertId: number }> {
-    console.log('Adding pet to database:', petData);
-    // Simulate adding to database with a successful response
-    return Promise.resolve({ insertId: Math.floor(Math.random() * 1000) });
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Adding pet (browser simulation):', petData);
+        return { insertId: Math.floor(Math.random() * 1000) };
+      }
+      
+      const { type, ...data } = petData;
+      let table, query, params;
+      
+      if (type === 'lost') {
+        table = 'lost_pets';
+        const { name, image, breed, age, location, description, date_reported, contact_name, contact_email, contact_phone } = data;
+        query = `
+          INSERT INTO ${table} 
+          (name, image, breed, age, location, description, date, contact_name, contact_email, contact_phone)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        params = [name, image, breed, age, location, description, date_reported, contact_name, contact_email, contact_phone];
+      } else {
+        table = 'adoption_pets';
+        const { name, image, breed, age, location, description, shelter, adoption_fee } = data;
+        query = `
+          INSERT INTO ${table} 
+          (name, image, breed, age, location, description, shelter, adoption_fee)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        params = [name, image, breed, age, location, description, shelter, adoption_fee];
+      }
+      
+      const result = await this.executeQuery<{ insertId: number }>(query, params);
+      return result;
+    } catch (error) {
+      console.error('Error adding pet:', error);
+      throw error;
+    }
   }
   
   // Get user by email
   public async getUserByEmail(email: string): Promise<User | null> {
-    console.log('Getting user by email:', email);
-    // In a real implementation, we would query the database
-    // For now, simulate a user found if using a test email
-    if (email === "test@example.com") {
-      return {
-        id: "user_1",
-        firstName: "Test",
-        lastName: "User",
-        email: "test@example.com",
-        password: "hashedpassword" // In a real app, this would be properly hashed
-      };
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Getting user by email (browser simulation):', email);
+        // Return mock user for testing
+        if (email === "test@example.com") {
+          return {
+            id: "user_1",
+            firstName: "Test",
+            lastName: "User",
+            email: "test@example.com",
+            password: "hashedpassword" // In a real app, this would be properly hashed
+          };
+        }
+        return null;
+      }
+      
+      const query = `
+        SELECT id, first_name as firstName, last_name as lastName, email, password
+        FROM users
+        WHERE email = ?
+      `;
+      
+      const users = await this.executeQuery<User[]>(query, [email]);
+      return users.length > 0 ? users[0] : null;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return null;
     }
-    return null;
   }
   
   // Add a new user
   public async addUser(userData: Omit<User, 'id'>): Promise<{ insertId: number }> {
-    console.log('Adding user to database:', userData);
-    // Simulate adding to database with a successful response
-    return Promise.resolve({ insertId: Math.floor(Math.random() * 1000) });
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Adding user (browser simulation):', userData);
+        return { insertId: Math.floor(Math.random() * 1000) };
+      }
+      
+      const { firstName, lastName, email, password } = userData;
+      const query = `
+        INSERT INTO users 
+        (first_name, last_name, email, password)
+        VALUES (?, ?, ?, ?)
+      `;
+      
+      return this.executeQuery<{ insertId: number }>(query, [firstName, lastName, email, password]);
+    } catch (error) {
+      console.error('Error adding user:', error);
+      throw error;
+    }
   }
   
   // Get products
   public async getProducts(): Promise<Product[]> {
-    console.log('Fetching products from database');
-    // In a real implementation, we would query the database
-    return [];
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Fetching products (browser simulation)');
+        return [];
+      }
+      
+      const query = `
+        SELECT 
+          id, name, image, price, rating, category, description, 
+          is_sale as isSale, sale_percentage as salePercentage
+        FROM products
+      `;
+      
+      return this.executeQuery<Product[]>(query);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
   }
 }
 
@@ -172,3 +350,4 @@ export async function getProducts(): Promise<Product[]> {
 
 // Export the database instance for direct access if needed
 export { db };
+

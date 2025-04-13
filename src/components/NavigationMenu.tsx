@@ -24,14 +24,14 @@ const NavigationMenu = () => {
       title: "Pet Supplies",
       description: "Shop for food, toys, and other essential supplies for your pets.",
       link: "/shop",
-      position: "bottom-right"
+      position: "bottom-right-lower"  // New position to create more space
     },
     {
       icon: <UserRound className="w-10 h-10 text-pawgreen-600" />,
       title: "Profile",
       description: "Manage your account and track your pet-related activities.",
       link: "/profile",
-      position: "bottom-left"
+      position: "bottom-left-lower"  // New position to create more space
     },
     {
       icon: <HelpCircle className="w-10 h-10 text-pawgreen-600" />,
@@ -43,11 +43,11 @@ const NavigationMenu = () => {
   ];
 
   return (
-    <div className="py-24 bg-pawbg relative">  {/* Increased vertical padding */}
+    <div className="py-24 bg-pawbg relative">
       <div className="paw-container">
         <h2 className="text-2xl md:text-3xl font-bold text-pawgreen-600 text-center mb-16">Our Services</h2>
         
-        <div className="flex justify-center mb-16">  {/* Increased margin-bottom */}
+        <div className="flex justify-center mb-16">
           <div className="relative w-full max-w-5xl mx-auto" style={{ height: "700px" }}>
             {/* Central dog image */}
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-64 h-64 mx-auto">
@@ -72,8 +72,14 @@ const NavigationMenu = () => {
                 case "bottom-right":
                   positionClass = "absolute right-0 bottom-1/4 transform translate-x-0";
                   break;
+                case "bottom-right-lower":  // New position
+                  positionClass = "absolute right-0 bottom-[10%] transform translate-x-0";
+                  break;
                 case "bottom-left":
                   positionClass = "absolute left-0 bottom-1/4 transform translate-x-0";
+                  break;
+                case "bottom-left-lower":  // New position
+                  positionClass = "absolute left-0 bottom-[10%] transform translate-x-0";
                   break;
                 case "top-left":
                   positionClass = "absolute left-0 top-1/4 transform translate-x-0";
@@ -107,4 +113,3 @@ const NavigationMenu = () => {
 };
 
 export default NavigationMenu;
-

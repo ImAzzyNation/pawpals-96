@@ -70,10 +70,10 @@ const NavigationMenu = () => {
                   positionClass = "absolute right-0 top-1/4 transform translate-x-0";
                   break;
                 case "bottom-right":
-                  positionClass = "absolute right-0 bottom-1/4 transform translate-x-0";
+                  positionClass = "absolute right-0 bottom-1/3 transform translate-x-0";
                   break;
                 case "bottom-left":
-                  positionClass = "absolute left-0 bottom-1/4 transform translate-x-0";
+                  positionClass = "absolute left-0 bottom-1/3 transform translate-x-0";
                   break;
                 case "top-left":
                   positionClass = "absolute left-0 top-1/4 transform translate-x-0";

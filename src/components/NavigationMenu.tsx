@@ -1,44 +1,44 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Dog, AlertTriangle, HelpCircle, ShoppingCart } from 'lucide-react';
+import { Dog, AlertTriangle, HelpCircle, ShoppingCart, UserRound } from 'lucide-react';
 
 const NavigationMenu = () => {
   const menuItems = [
-    {
-      icon: <Home className="w-10 h-10 text-pawgreen-600" />,
-      title: "Housing",
-      description: "Find a safe and comfortable housing for your pet while you're away.",
-      link: "/housing",
-      position: "left-top"
-    },
     {
       icon: <Dog className="w-10 h-10 text-pawgreen-600" />,
       title: "Adoption",
       description: "Browse pets looking for a loving home and start the adoption process today.",
       link: "/adopt",
-      position: "left-bottom"
+      position: "top-left"
     },
     {
       icon: <AlertTriangle className="w-10 h-10 text-pawgreen-600" />,
-      title: "Reports",
-      description: "Report lost pets, abuse, or other urgent matters to help keep animals safe.",
+      title: "Lost Pets",
+      description: "Report lost pets or help reunite furry friends with their families.",
       link: "/lost",
-      position: "right-top"
-    },
-    {
-      icon: <HelpCircle className="w-10 h-10 text-pawgreen-600" />,
-      title: "Online Help",
-      description: "Access expert advice and support from other pet lovers in our forum.",
-      link: "/help",
-      position: "right-bottom"
+      position: "top-right"
     },
     {
       icon: <ShoppingCart className="w-10 h-10 text-pawgreen-600" />,
       title: "Pet Supplies",
       description: "Shop for food, toys, and other essential supplies for your pets.",
       link: "/shop",
-      position: "bottom"
+      position: "bottom-left"
+    },
+    {
+      icon: <UserRound className="w-10 h-10 text-pawgreen-600" />,
+      title: "Profile",
+      description: "Manage your account and track your pet-related activities.",
+      link: "/profile",
+      position: "bottom-right"
+    },
+    {
+      icon: <HelpCircle className="w-10 h-10 text-pawgreen-600" />,
+      title: "Online Help",
+      description: "Access expert advice and support from other pet lovers in our forum.",
+      link: "/help",
+      position: "bottom-center"
     }
   ];
 
@@ -47,10 +47,8 @@ const NavigationMenu = () => {
       <div className="paw-container">
         <h2 className="text-2xl md:text-3xl font-bold text-pawgreen-600 text-center mb-12">Our Services</h2>
         
-        {/* Central dog image with absolute positioning */}
         <div className="flex justify-center mb-12">
           <div className="relative w-full max-w-5xl">
-            {/* Central dog image */}
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 max-w-xs mx-auto">
               <img 
                 src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" 
@@ -59,25 +57,23 @@ const NavigationMenu = () => {
               />
             </div>
             
-            {/* Circular layout for menu items */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative" style={{ minHeight: "600px" }}>
               {menuItems.map((item, index) => {
-                // Determine positioning class based on the position property
                 let positionClass = "";
                 switch(item.position) {
-                  case "left-top":
+                  case "top-left":
                     positionClass = "md:col-start-1 md:row-start-1";
                     break;
-                  case "left-bottom":
-                    positionClass = "md:col-start-1 md:row-start-2";
-                    break;
-                  case "right-top":
+                  case "top-right":
                     positionClass = "md:col-start-3 md:row-start-1";
                     break;
-                  case "right-bottom":
-                    positionClass = "md:col-start-3 md:row-start-2";
+                  case "bottom-left":
+                    positionClass = "md:col-start-1 md:row-start-3";
                     break;
-                  case "bottom":
+                  case "bottom-right":
+                    positionClass = "md:col-start-3 md:row-start-3";
+                    break;
+                  case "bottom-center":
                     positionClass = "md:col-start-2 md:row-start-3";
                     break;
                   default:
@@ -102,7 +98,6 @@ const NavigationMenu = () => {
                 );
               })}
               
-              {/* Empty center div for spacing in mobile */}
               <div className="hidden md:block md:col-start-2 md:row-start-1 md:row-end-3"></div>
             </div>
           </div>

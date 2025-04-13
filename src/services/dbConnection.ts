@@ -18,16 +18,16 @@ if (typeof window === 'undefined') {
   uuidv4 = v4;
 }
 
-// Database configuration
+// Database configuration - use environment variables if available, otherwise defaults
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'pawpals',
+  host: typeof window === 'undefined' ? process.env.DB_HOST || 'localhost' : 'localhost',
+  user: typeof window === 'undefined' ? process.env.DB_USER || 'root' : 'root',
+  password: typeof window === 'undefined' ? process.env.DB_PASSWORD || '' : '',
+  database: typeof window === 'undefined' ? process.env.DB_NAME || 'pawpals' : 'pawpals',
 };
 
 // Media storage configuration
-const UPLOAD_DIR = process.env.UPLOAD_DIR || 'public/uploads';
+const UPLOAD_DIR = typeof window === 'undefined' ? process.env.UPLOAD_DIR || 'public/uploads' : 'public/uploads';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Handle file uploads - browser-safe implementation

@@ -1,9 +1,22 @@
 
-import mysql from 'mysql2/promise';
+// Import only what can be used in both browser and Node environments
 import { Pet, User, Product } from '../services/dbService';
-import fs from 'fs';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+
+// For Node.js environment only (server-side)
+let mysql: any;
+let fs: any;
+let path: any;
+let uuidv4: any;
+
+// Only import Node.js modules on the server side
+if (typeof window === 'undefined') {
+  // Server-side imports
+  mysql = require('mysql2/promise');
+  fs = require('fs');
+  path = require('path');
+  const { v4 } = require('uuid');
+  uuidv4 = v4;
+}
 
 // Database configuration
 const dbConfig = {
@@ -17,12 +30,7 @@ const dbConfig = {
 const UPLOAD_DIR = process.env.UPLOAD_DIR || 'public/uploads';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-// Ensure upload directory exists
-if (typeof window === 'undefined' && !fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Handle file uploads
+// Handle file uploads - browser-safe implementation
 export const saveMedia = async (file: File): Promise<string> => {
   try {
     // For browser environment, use a different approach
@@ -41,6 +49,11 @@ export const saveMedia = async (file: File): Promise<string> => {
     const fileName = `${uuidv4()}${fileExtension}`;
     const filePath = path.join(UPLOAD_DIR, fileName);
     
+    // Ensure upload directory exists
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+    
     // Write file to disk
     const buffer = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync(filePath, buffer);
@@ -52,10 +65,93 @@ export const saveMedia = async (file: File): Promise<string> => {
   }
 };
 
+// Browser-safe mock data for client-side rendering
+const mockLostPets: Pet[] = [
+  {
+    id: 'mock1',
+    name: 'Max',
+    image: '/placeholder.svg',
+    breed: 'Golden Retriever',
+    age: '3 years',
+    location: 'Downtown',
+    type: 'lost',
+    date: '2025-04-10',
+    description: 'Friendly golden retriever with a blue collar',
+    contactName: 'John Smith',
+    contactEmail: 'john@example.com',
+    contactPhone: '555-1234'
+  },
+  {
+    id: 'mock2',
+    name: 'Bella',
+    image: '/placeholder.svg',
+    breed: 'Siamese Cat',
+    age: '2 years',
+    location: 'Westside',
+    type: 'lost',
+    date: '2025-04-11',
+    description: 'White and brown Siamese cat with blue eyes',
+    contactName: 'Emma Jones',
+    contactEmail: 'emma@example.com',
+    contactPhone: '555-5678'
+  }
+];
+
+const mockAdoptionPets: Pet[] = [
+  {
+    id: 'mock3',
+    name: 'Charlie',
+    image: '/placeholder.svg',
+    breed: 'Labrador Mix',
+    age: '1 year',
+    location: 'Eastside Shelter',
+    type: 'adopt',
+    description: 'Energetic and playful labrador mix looking for a loving home',
+    shelter: 'Eastside Animal Shelter',
+    adoptionFee: '$150'
+  },
+  {
+    id: 'mock4',
+    name: 'Luna',
+    image: '/placeholder.svg',
+    breed: 'Tabby Cat',
+    age: '8 months',
+    location: 'Downtown Rescue',
+    type: 'adopt',
+    description: 'Sweet tabby cat that loves to cuddle',
+    shelter: 'Downtown Animal Rescue',
+    adoptionFee: '$90'
+  }
+];
+
+const mockProducts: Product[] = [
+  {
+    id: 'prod1',
+    name: 'Premium Dog Food',
+    image: '/placeholder.svg',
+    price: 29.99,
+    rating: 4.5,
+    category: 'Food',
+    description: 'High-quality dog food with all essential nutrients',
+    isSale: false
+  },
+  {
+    id: 'prod2',
+    name: 'Cat Scratching Post',
+    image: '/placeholder.svg',
+    price: 24.99,
+    rating: 4.2,
+    category: 'Accessories',
+    description: 'Durable scratching post for cats',
+    isSale: true,
+    salePercentage: 15
+  }
+];
+
 // Database connection class
 class DatabaseConnection {
   private static instance: DatabaseConnection;
-  private pool: mysql.Pool | null = null;
+  private pool: any = null;
   private connected: boolean = false;
   
   private constructor() {
@@ -104,10 +200,11 @@ class DatabaseConnection {
     return this.connected;
   }
   
-  // Execute query
+  // Execute query - browser-safe implementation
   public async executeQuery<T>(query: string, params?: any[]): Promise<T> {
     if (typeof window !== 'undefined') {
       console.log('Simulating query execution in browser:', query, params);
+      // Return mock data based on query type for browser testing
       return [] as unknown as T;
     }
     
@@ -130,8 +227,8 @@ class DatabaseConnection {
     try {
       if (typeof window !== 'undefined') {
         console.log('Fetching lost pets (browser simulation)');
-        // Return empty array in browser environment for now
-        return [];
+        // Return mock data in browser environment
+        return mockLostPets;
       }
       
       const query = `
@@ -154,8 +251,8 @@ class DatabaseConnection {
     try {
       if (typeof window !== 'undefined') {
         console.log('Fetching adoption pets (browser simulation)');
-        // Return empty array in browser environment for now
-        return [];
+        // Return mock data in browser environment
+        return mockAdoptionPets;
       }
       
       const query = `
@@ -284,7 +381,7 @@ class DatabaseConnection {
     try {
       if (typeof window !== 'undefined') {
         console.log('Fetching products (browser simulation)');
-        return [];
+        return mockProducts;
       }
       
       const query = `
@@ -302,7 +399,7 @@ class DatabaseConnection {
   }
 }
 
-// Export a singleton instance
+// Create a singleton instance
 const db = DatabaseConnection.getInstance();
 
 // Export functions to match previous usage
@@ -350,4 +447,3 @@ export async function getProducts(): Promise<Product[]> {
 
 // Export the database instance for direct access if needed
 export { db };
-

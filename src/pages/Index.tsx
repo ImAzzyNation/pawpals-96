@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
@@ -10,12 +10,39 @@ import NavigationMenu from '../components/NavigationMenu';
 import PetCard from '../components/PetCard';
 import ProductCard from '../components/ProductCard';
 import { Button } from '../components/ui/button';
-import { lostPets, adoptionPets, shopProducts, featuredCategories } from '../data/mockData';
+import { featuredCategories } from '../data/mockData';
+import { getLostPets, getAdoptionPets, getProducts } from '../services/dbConnection';
+import { Pet, Product } from '../services/dbService';
 
 const Index = () => {
-  const recentLostPets = lostPets.slice(0, 3);
-  const featuredAdoptPets = adoptionPets.slice(0, 3);
-  const featuredProducts = shopProducts.slice(0, 4);
+  const [recentLostPets, setRecentLostPets] = useState<Pet[]>([]);
+  const [featuredAdoptPets, setFeaturedAdoptPets] = useState<Pet[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        // Fetch data from our database service
+        const [lostPets, adoptPets, products] = await Promise.all([
+          getLostPets(),
+          getAdoptionPets(),
+          getProducts()
+        ]);
+        
+        setRecentLostPets(lostPets.slice(0, 3));
+        setFeaturedAdoptPets(adoptPets.slice(0, 3));
+        setFeaturedProducts(products.slice(0, 4));
+      } catch (error) {
+        console.error('Error fetching data for homepage:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -40,11 +67,21 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentLostPets.map(pet => (
-                <PetCard key={pet.id} {...pet} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Loading pets...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recentLostPets.length > 0 ? (
+                  recentLostPets.map(pet => (
+                    <PetCard key={pet.id} {...pet} />
+                  ))
+                ) : (
+                  <p className="col-span-3 text-center text-gray-500">No lost pets found.</p>
+                )}
+              </div>
+            )}
           </div>
         </section>
         
@@ -61,11 +98,21 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredAdoptPets.map(pet => (
-                <PetCard key={pet.id} {...pet} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Loading pets...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredAdoptPets.length > 0 ? (
+                  featuredAdoptPets.map(pet => (
+                    <PetCard key={pet.id} {...pet} />
+                  ))
+                ) : (
+                  <p className="col-span-3 text-center text-gray-500">No adoption pets found.</p>
+                )}
+              </div>
+            )}
           </div>
         </section>
         
@@ -137,11 +184,21 @@ const Index = () => {
             </div>
             
             {/* Featured Products */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map(product => (
-                <ProductCard key={product.id} {...product} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-10">
+                <p className="text-gray-500">Loading products...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {featuredProducts.length > 0 ? (
+                  featuredProducts.map(product => (
+                    <ProductCard key={product.id} {...product} />
+                  ))
+                ) : (
+                  <p className="col-span-4 text-center text-gray-500">No products found.</p>
+                )}
+              </div>
+            )}
           </div>
         </section>
         

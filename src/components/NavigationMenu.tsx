@@ -43,11 +43,11 @@ const NavigationMenu = () => {
   ];
 
   return (
-    <div className="py-16 bg-pawbg relative">
+    <div className="py-24 bg-pawbg relative">  {/* Increased vertical padding */}
       <div className="paw-container">
-        <h2 className="text-2xl md:text-3xl font-bold text-pawgreen-600 text-center mb-12">Our Services</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-pawgreen-600 text-center mb-16">Our Services</h2>
         
-        <div className="flex justify-center mb-12">
+        <div className="flex justify-center mb-16">  {/* Increased margin-bottom */}
           <div className="relative w-full max-w-5xl mx-auto" style={{ height: "700px" }}>
             {/* Central dog image */}
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-64 h-64 mx-auto">
@@ -107,3 +107,4 @@ const NavigationMenu = () => {
 };
 
 export default NavigationMenu;
+

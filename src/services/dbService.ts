@@ -23,7 +23,10 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
-  password: string;
+  password?: string;
+  bio?: string;
+  phone?: string;
+  address?: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -119,8 +122,26 @@ export const authService = {
     }
 
     const userData = await response.json();
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+    localStorage.setItem('pawpals_user', JSON.stringify(userData));
     return userData;
+  },
+
+  async signup(userData: { first_name: string, last_name: string, email: string, password: string }): Promise<User> {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Registration failed');
+    }
+
+    const newUser = await response.json();
+    localStorage.setItem('pawpals_user', JSON.stringify(newUser));
+    return newUser;
   },
 
   async register(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
@@ -137,18 +158,18 @@ export const authService = {
     }
 
     const newUser = await response.json();
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
+    localStorage.setItem('pawpals_user', JSON.stringify(newUser));
     return newUser;
   },
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('pawpals_user');
     // Dispatch an event that the user has logged out
     window.dispatchEvent(new Event('storage'));
   },
 
   getCurrentUser(): User | null {
-    const userJson = localStorage.getItem('currentUser');
+    const userJson = localStorage.getItem('pawpals_user');
     if (!userJson) return null;
     try {
       return JSON.parse(userJson);

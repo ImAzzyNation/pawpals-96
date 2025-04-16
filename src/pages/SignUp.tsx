@@ -67,12 +67,12 @@ const SignUp = () => {
       // Try to use auth service for signup
       try {
         await authService.signup({
-          firstName: values.firstName,
-          lastName: values.lastName,
+          first_name: values.firstName,
+          last_name: values.lastName,
           email: values.email,
           password: values.password
         });
-      } catch (apiError) {
+      } catch (apiError: any) {
         console.error('Signup error:', apiError);
         
         // If backend is not available, create a mock user in localStorage for development
@@ -80,8 +80,8 @@ const SignUp = () => {
           // Store user data in localStorage (for development only)
           const mockUser = {
             id: `user_${Date.now()}`,
-            firstName: values.firstName,
-            lastName: values.lastName,
+            first_name: values.firstName,
+            last_name: values.lastName,
             email: values.email
           };
           

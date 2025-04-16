@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -49,8 +48,8 @@ const NavBar = () => {
   // Get user initials for avatar fallback
   const getUserInitials = () => {
     if (!currentUser) return '';
-    const firstInitial = currentUser.firstName ? currentUser.firstName[0] : '';
-    const lastInitial = currentUser.lastName ? currentUser.lastName[0] : '';
+    const firstInitial = currentUser.first_name ? currentUser.first_name[0] : '';
+    const lastInitial = currentUser.last_name ? currentUser.last_name[0] : '';
     return (firstInitial + lastInitial).toUpperCase();
   };
 
@@ -92,7 +91,7 @@ const NavBar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
-                      <AvatarImage src="/placeholder.svg" alt={`${currentUser.firstName} ${currentUser.lastName}`} />
+                      <AvatarImage src="/placeholder.svg" alt={`${currentUser.first_name} ${currentUser.last_name}`} />
                       <AvatarFallback className="bg-pawgreen-100 text-pawgreen-800">
                         {getUserInitials()}
                       </AvatarFallback>
@@ -176,7 +175,7 @@ const NavBar = () => {
               {currentUser ? (
                 <div className="flex items-center gap-2">
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" alt={`${currentUser.firstName} ${currentUser.lastName}`} />
+                    <AvatarImage src="/placeholder.svg" alt={`${currentUser.first_name} ${currentUser.last_name}`} />
                     <AvatarFallback className="bg-pawgreen-100 text-pawgreen-800">
                       {getUserInitials()}
                     </AvatarFallback>

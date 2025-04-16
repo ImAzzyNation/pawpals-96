@@ -12,8 +12,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { User, Edit, Save } from 'lucide-react';
 
 type ProfileData = {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   bio: string;
   phone: string;
@@ -25,8 +25,8 @@ const Profile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     bio: '',
     phone: '',
@@ -43,8 +43,8 @@ const Profile = () => {
 
     // Initialize profile data from the user object
     setProfileData({
-      firstName: currentUser.firstName || '',
-      lastName: currentUser.lastName || '',
+      first_name: currentUser.first_name || '',
+      last_name: currentUser.last_name || '',
       email: currentUser.email || '',
       bio: currentUser.bio || 'No bio provided yet.',
       phone: currentUser.phone || '',
@@ -122,21 +122,21 @@ const Profile = () => {
             <div className="p-6 space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="first_name">First Name</Label>
                   <Input 
-                    id="firstName"
-                    name="firstName"
-                    value={profileData.firstName}
+                    id="first_name"
+                    name="first_name"
+                    value={profileData.first_name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="last_name">Last Name</Label>
                   <Input 
-                    id="lastName"
-                    name="lastName"
-                    value={profileData.lastName}
+                    id="last_name"
+                    name="last_name"
+                    value={profileData.last_name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />

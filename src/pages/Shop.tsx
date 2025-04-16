@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Input } from '../components/ui/input';
@@ -17,7 +16,7 @@ import { Slider } from "../components/ui/slider";
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
-import { shopProducts, featuredCategories } from '../data/mockData';
+import { shopProducts, featuredCategories } from '../data/categories';
 
 const Shop = () => {
   const [searchTerm, setSearchTerm] = useState('');

@@ -8,7 +8,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 $host = 'localhost';
 $db   = 'pawpals';
 $user = 'root';  // Default MySQL Workbench username
-$pass = '';      // Your MySQL Workbench password
+$pass = 'admin';      // Your MySQL Workbench password
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

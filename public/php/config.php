@@ -5,10 +5,14 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 $host = 'localhost';
 $db   = 'pawpals';
 $user = 'root';  // Default MySQL Workbench username
-$pass = 'admin';      // Your MySQL Workbench password
+$pass = '';      // Your MySQL Workbench password
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -22,7 +26,7 @@ try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 ?>

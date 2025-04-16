@@ -11,7 +11,7 @@ import PetCard from '../components/PetCard';
 import ProductCard from '../components/ProductCard';
 import { Button } from '../components/ui/button';
 import { getLostPets, getAdoptionPets, getProducts } from '../services/dbConnection';
-import { featuredCategories } from '../services/dbService';
+import { featuredCategories } from '../services/featuredData';
 import { Pet, Product } from '../services/dbService';
 
 const Index = () => {

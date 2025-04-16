@@ -1,11 +1,15 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, PawPrint } from 'lucide-react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { PawPrint } from 'lucide-react';
 
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,298 +18,194 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { authService } from '@/services/authService';
 
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/Footer';
-import { authService } from '@/services/dbService';
-
+// Form validation schema
 const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }).regex(/[A-Z]/, {
-    message: "Password must contain at least one uppercase letter."
-  }).regex(/[0-9]/, {
-    message: "Password must contain at least one number."
-  }),
-  confirmPassword: z.string(),
+  firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
+  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  confirmPassword: z.string().min(8, { message: 'Password must be at least 8 characters' }),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
 const SignUp = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   
+  // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('Sign up form submitted with values:', values);
+  
+  // Form submission handler
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.info('Sign up form submitted with values:', values);
     setIsLoading(true);
     
     try {
-      // Try to register through the auth service
-      try {
-        await authService.register({
-          first_name: values.firstName,
-          last_name: values.lastName,
-          email: values.email,
-          password: values.password
-        });
-        
-        console.log('Registration successful');
-        
-        toast({
-          title: "Registration Successful",
-          description: "Welcome to PawPals! Your account has been created.",
-          variant: "default"
-        });
-        
-        // Redirect to homepage after successful registration
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
-        
-      } catch (apiError: any) {
-        console.error('Signup API error:', apiError);
-        
-        // For development only: mock user creation if API not available
-        if (apiError.message && apiError.message.includes('Failed to fetch')) {
-          console.log('Creating mock user for development');
-          
-          // Create a mock user object
-          const mockUser = {
-            id: `user_${Date.now()}`,
-            first_name: values.firstName,
-            last_name: values.lastName,
-            email: values.email,
-            created_at: new Date(),
-            updated_at: new Date()
-          };
-          
-          // Store in localStorage like the real auth service would
-          localStorage.setItem('pawpals_user', JSON.stringify(mockUser));
-          
-          // Force storage event to update UI
-          window.dispatchEvent(new Event('storage'));
-          
-          toast({
-            title: "Development Mode",
-            description: "Mock account created successfully!",
-            variant: "default"
-          });
-          
-          // Redirect to homepage
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
-        } else {
-          // For other errors, show error toast
-          throw apiError;
-        }
-      }
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      toast({
-        variant: "destructive",
-        title: "Registration Failed",
-        description: error.message || "There was a problem creating your account. Please try again.",
+      await authService.register({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
       });
+      
+      // Redirect to home page on successful registration
+      navigate('/');
+    } catch (error) {
+      console.error('Signup error:', error);
+      // Error handling happens in authService
     } finally {
       setIsLoading(false);
     }
-  }
+  };
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <NavBar />
       
-      <main className="flex-grow flex items-center justify-center py-12 bg-pawbg">
-        <div className="w-full max-w-md mx-auto px-4">
-          <div className="bg-white shadow-md rounded-xl overflow-hidden">
-            {/* Header */}
-            <div className="bg-pawgreen-500 p-6 text-white text-center">
-              <div className="flex justify-center mb-2">
-                <PawPrint className="h-10 w-10" strokeWidth={2.5} />
+      <main className="paw-container py-12">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+          <div className="text-center mb-6">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4">
+              <PawPrint className="h-8 w-8 text-pawgreen-500" strokeWidth={2.5} />
+              <span className="text-2xl font-bold text-pawgreen-600">PawPals</span>
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-800">Create Account</h1>
+            <p className="text-gray-600 mt-1">Join our pet-loving community</p>
+          </div>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="John" 
+                          {...field} 
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Doe" 
+                          {...field} 
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              <h1 className="text-2xl font-bold">Join PawPals</h1>
-              <p className="text-pawgreen-50 mt-1">Create your account</p>
-            </div>
-            
-            {/* Signup Form */}
-            <div className="p-6">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email"
-                            placeholder="your.email@example.com" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input 
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              {...field} 
-                            />
-                            <button
-                              type="button"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff size={18} />
-                              ) : (
-                                <Eye size={18} />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input 
-                              type={showConfirmPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              {...field} 
-                            />
-                            <button
-                              type="button"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff size={18} />
-                              ) : (
-                                <Eye size={18} />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="text-sm text-gray-600">
-                    By signing up, you agree to our{" "}
-                    <Link to="/terms" className="text-pawgreen-500 hover:text-pawgreen-600">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy" className="text-pawgreen-500 hover:text-pawgreen-600">
-                      Privacy Policy
-                    </Link>
-                    .
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-pawgreen-500 hover:bg-pawgreen-600"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating Account..." : "Create Account"}
-                  </Button>
-                </form>
-              </Form>
               
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Already have an account?{" "}
-                  <Link
-                    to="/login"
-                    className="font-medium text-pawgreen-500 hover:text-pawgreen-600"
-                  >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="john@example.com" 
+                        {...field} 
+                        type="email"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="********" 
+                        {...field} 
+                        type="password"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="********" 
+                        {...field} 
+                        type="password"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-pawgreen-500 hover:bg-pawgreen-600"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating Account...' : 'Create Account'}
+              </Button>
+              
+              <div className="text-center mt-4">
+                <p className="text-gray-600">
+                  Already have an account? {' '}
+                  <Link to="/login" className="text-pawgreen-500 hover:underline">
                     Sign in
                   </Link>
                 </p>
               </div>
-            </div>
-          </div>
+            </form>
+          </Form>
         </div>
       </main>
       
       <Footer />
-    </div>
+    </>
   );
 };
 

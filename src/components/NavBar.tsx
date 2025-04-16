@@ -10,7 +10,7 @@ import {
   X,
   LogOut
 } from 'lucide-react';
-import { authService } from '@/services/dbService';
+import { authService } from '@/services/authService';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   DropdownMenu,

@@ -1,124 +1,142 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { authService } from '@/services/dbService';
-import { useToast } from "@/hooks/use-toast";
+import { PawPrint } from 'lucide-react';
 
-// Login form validation schema
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { authService } from '@/services/authService';
+
+// Form validation schema
+const formSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
 });
 
 const Login = () => {
-  const { toast } = useToast();
-
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Initialize form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
-      password: ''
-    }
+      password: '',
+    },
   });
-
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+  
+  // Form submission handler
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     try {
-      await authService.login(values.email, values.password);
-      // Redirect or show success toast
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+      await authService.login({
+        email: values.email,
+        password: values.password,
       });
+      
+      // Redirect to home page on successful login
+      navigate('/');
     } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password",
-        variant: "destructive"
-      });
+      console.error('Login error:', error);
+      // Error handling happens in authService
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
   return (
-    <div className="flex min-h-screen items-center justify-center bg-pawbg px-4 py-12">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-md">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-pawgreen-600">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600">Login to your account</p>
-        </div>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="you@example.com" 
-                      type="email" 
-                      {...field} 
-                      className="mt-1"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter your password" 
-                      type="password" 
-                      {...field} 
-                      className="mt-1"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div>
+    <>
+      <NavBar />
+      
+      <main className="paw-container py-12">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+          <div className="text-center mb-6">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4">
+              <PawPrint className="h-8 w-8 text-pawgreen-500" strokeWidth={2.5} />
+              <span className="text-2xl font-bold text-pawgreen-600">PawPals</span>
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
+            <p className="text-gray-600 mt-1">Sign in to your account</p>
+          </div>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="john@example.com" 
+                        {...field} 
+                        type="email"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="********" 
+                        {...field} 
+                        type="password"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <Button 
                 type="submit" 
                 className="w-full bg-pawgreen-500 hover:bg-pawgreen-600"
+                disabled={isLoading}
               >
-                Login
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
-            </div>
-          </form>
-        </Form>
-        
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Don't have an account? {' '}
-            <Link 
-              to="/signup" 
-              className="font-medium text-pawgreen-500 hover:text-pawgreen-600"
-            >
-              Sign up
-            </Link>
-          </p>
+              
+              <div className="text-center mt-4">
+                <p className="text-gray-600">
+                  Don't have an account? {' '}
+                  <Link to="/signup" className="text-pawgreen-500 hover:underline">
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </Form>
         </div>
-      </div>
-    </div>
+      </main>
+      
+      <Footer />
+    </>
   );
 };
 
 export default Login;
-

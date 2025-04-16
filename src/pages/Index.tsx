@@ -10,8 +10,8 @@ import NavigationMenu from '../components/NavigationMenu';
 import PetCard from '../components/PetCard';
 import ProductCard from '../components/ProductCard';
 import { Button } from '../components/ui/button';
-import { featuredCategories } from '../data/mockData';
 import { getLostPets, getAdoptionPets, getProducts } from '../services/dbConnection';
+import { featuredCategories } from '../services/dbService';
 import { Pet, Product } from '../services/dbService';
 
 const Index = () => {
@@ -75,7 +75,10 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentLostPets.length > 0 ? (
                   recentLostPets.map(pet => (
-                    <PetCard key={pet.id} {...pet} />
+                    <PetCard 
+                      key={pet.id}
+                      {...pet}
+                    />
                   ))
                 ) : (
                   <p className="col-span-3 text-center text-gray-500">No lost pets found.</p>
@@ -106,7 +109,10 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {featuredAdoptPets.length > 0 ? (
                   featuredAdoptPets.map(pet => (
-                    <PetCard key={pet.id} {...pet} />
+                    <PetCard 
+                      key={pet.id}
+                      {...pet}
+                    />
                   ))
                 ) : (
                   <p className="col-span-3 text-center text-gray-500">No adoption pets found.</p>
@@ -192,7 +198,10 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredProducts.length > 0 ? (
                   featuredProducts.map(product => (
-                    <ProductCard key={product.id} {...product} />
+                    <ProductCard 
+                      key={product.id}
+                      {...product}
+                    />
                   ))
                 ) : (
                   <p className="col-span-4 text-center text-gray-500">No products found.</p>

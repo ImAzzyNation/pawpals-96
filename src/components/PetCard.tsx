@@ -8,20 +8,38 @@ import { Button } from './ui/button';
 export interface PetCardProps {
   id: string;
   name: string;
-  image: string;
+  image?: string; // For backward compatibility
+  image_url?: string; // From database
   breed: string;
   age: string;
   location: string;
   type: 'lost' | 'adopt';
   date?: string;
+  date_reported?: string; // From database
 }
 
-const PetCard = ({ id, name, image, breed, age, location, type, date }: PetCardProps) => {
+const PetCard = ({ 
+  id, 
+  name, 
+  image, 
+  image_url, 
+  breed, 
+  age, 
+  location, 
+  type,
+  date,
+  date_reported
+}: PetCardProps) => {
+  // Use image_url from database if available, otherwise fall back to image prop
+  const imageSource = image_url || image || '/placeholder.svg';
+  // Use date_reported from database if available, otherwise fall back to date prop
+  const displayDate = date_reported || date;
+
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 card-hover">
       <div className="relative">
         <img 
-          src={image} 
+          src={imageSource} 
           alt={name} 
           className="w-full h-48 object-cover"
         />
@@ -47,10 +65,10 @@ const PetCard = ({ id, name, image, breed, age, location, type, date }: PetCardP
             <MapPin className="w-4 h-4 mr-2" />
             <span>{location}</span>
           </div>
-          {date && type === 'lost' && (
+          {displayDate && type === 'lost' && (
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>Lost on {date}</span>
+              <span>Lost on {displayDate}</span>
             </div>
           )}
         </div>

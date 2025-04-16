@@ -1,6 +1,6 @@
 
 // Import only what can be used in both browser and Node environments
-import { Pet, User, Product } from '../services/dbService';
+import { Pet, User, Product, Category } from '../services/dbService';
 
 // For Node.js environment only (server-side)
 let mysql: any;
@@ -70,30 +70,34 @@ const mockLostPets: Pet[] = [
   {
     id: 'mock1',
     name: 'Max',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     breed: 'Golden Retriever',
     age: '3 years',
     location: 'Downtown',
     type: 'lost',
-    date: '2025-04-10',
     description: 'Friendly golden retriever with a blue collar',
-    contactName: 'John Smith',
-    contactEmail: 'john@example.com',
-    contactPhone: '555-1234'
+    date_reported: '2025-04-10',
+    contact_name: 'John Smith',
+    contact_email: 'john@example.com',
+    contact_phone: '555-1234',
+    created_at: new Date(),
+    updated_at: new Date()
   },
   {
     id: 'mock2',
     name: 'Bella',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     breed: 'Siamese Cat',
     age: '2 years',
     location: 'Westside',
     type: 'lost',
-    date: '2025-04-11',
     description: 'White and brown Siamese cat with blue eyes',
-    contactName: 'Emma Jones',
-    contactEmail: 'emma@example.com',
-    contactPhone: '555-5678'
+    date_reported: '2025-04-11',
+    contact_name: 'Emma Jones',
+    contact_email: 'emma@example.com',
+    contact_phone: '555-5678',
+    created_at: new Date(),
+    updated_at: new Date()
   }
 ];
 
@@ -101,26 +105,30 @@ const mockAdoptionPets: Pet[] = [
   {
     id: 'mock3',
     name: 'Charlie',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     breed: 'Labrador Mix',
     age: '1 year',
     location: 'Eastside Shelter',
     type: 'adopt',
     description: 'Energetic and playful labrador mix looking for a loving home',
     shelter: 'Eastside Animal Shelter',
-    adoptionFee: '$150'
+    adoption_fee: '$150',
+    created_at: new Date(),
+    updated_at: new Date()
   },
   {
     id: 'mock4',
     name: 'Luna',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     breed: 'Tabby Cat',
     age: '8 months',
     location: 'Downtown Rescue',
     type: 'adopt',
     description: 'Sweet tabby cat that loves to cuddle',
     shelter: 'Downtown Animal Rescue',
-    adoptionFee: '$90'
+    adoption_fee: '$90',
+    created_at: new Date(),
+    updated_at: new Date()
   }
 ];
 
@@ -128,23 +136,27 @@ const mockProducts: Product[] = [
   {
     id: 'prod1',
     name: 'Premium Dog Food',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     price: 29.99,
     rating: 4.5,
     category: 'Food',
     description: 'High-quality dog food with all essential nutrients',
-    isSale: false
+    is_sale: false,
+    created_at: new Date(),
+    updated_at: new Date()
   },
   {
     id: 'prod2',
     name: 'Cat Scratching Post',
-    image: '/placeholder.svg',
+    image_url: '/placeholder.svg',
     price: 24.99,
     rating: 4.2,
     category: 'Accessories',
     description: 'Durable scratching post for cats',
-    isSale: true,
-    salePercentage: 15
+    is_sale: true,
+    sale_percentage: 15,
+    created_at: new Date(),
+    updated_at: new Date()
   }
 ];
 
@@ -233,10 +245,11 @@ class DatabaseConnection {
       
       const query = `
         SELECT 
-          id, name, image, breed, age, location, 'lost' as type, 
-          date, description, contact_name as contactName, 
-          contact_email as contactEmail, contact_phone as contactPhone
-        FROM lost_pets
+          id, name, image_url, breed, age, location, 'lost' as type, 
+          description, date_reported, contact_name, 
+          contact_email, contact_phone, created_at, updated_at
+        FROM pets
+        WHERE type = 'lost'
       `;
       
       return this.executeQuery<Pet[]>(query);
@@ -257,9 +270,10 @@ class DatabaseConnection {
       
       const query = `
         SELECT 
-          id, name, image, breed, age, location, 'adopt' as type,
-          description, shelter, adoption_fee as adoptionFee
-        FROM adoption_pets
+          id, name, image_url, breed, age, location, 'adopt' as type,
+          description, shelter, adoption_fee, created_at, updated_at
+        FROM pets
+        WHERE type = 'adopt'
       `;
       
       return this.executeQuery<Pet[]>(query);
@@ -272,7 +286,7 @@ class DatabaseConnection {
   // Helper to add a new pet
   public async addPet(petData: {
     name: string;
-    image: string;
+    image_url: string;
     breed: string;
     age: string;
     location: string;
@@ -292,27 +306,30 @@ class DatabaseConnection {
       }
       
       const { type, ...data } = petData;
-      let table, query, params;
+      let query, params;
       
-      if (type === 'lost') {
-        table = 'lost_pets';
-        const { name, image, breed, age, location, description, date_reported, contact_name, contact_email, contact_phone } = data;
-        query = `
-          INSERT INTO ${table} 
-          (name, image, breed, age, location, description, date, contact_name, contact_email, contact_phone)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        params = [name, image, breed, age, location, description, date_reported, contact_name, contact_email, contact_phone];
-      } else {
-        table = 'adoption_pets';
-        const { name, image, breed, age, location, description, shelter, adoption_fee } = data;
-        query = `
-          INSERT INTO ${table} 
-          (name, image, breed, age, location, description, shelter, adoption_fee)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        params = [name, image, breed, age, location, description, shelter, adoption_fee];
-      }
+      query = `
+        INSERT INTO pets 
+        (name, image_url, breed, age, location, type, description, 
+         date_reported, contact_name, contact_email, contact_phone, shelter, adoption_fee)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      params = [
+        data.name, 
+        data.image_url, 
+        data.breed, 
+        data.age, 
+        data.location, 
+        type,
+        data.description, 
+        data.date_reported || null, 
+        data.contact_name || null, 
+        data.contact_email || null, 
+        data.contact_phone || null,
+        data.shelter || null,
+        data.adoption_fee || null
+      ];
       
       const result = await this.executeQuery<{ insertId: number }>(query, params);
       return result;
@@ -331,17 +348,19 @@ class DatabaseConnection {
         if (email === "test@example.com") {
           return {
             id: "user_1",
-            firstName: "Test",
-            lastName: "User",
+            first_name: "Test",
+            last_name: "User",
             email: "test@example.com",
-            password: "hashedpassword" // In a real app, this would be properly hashed
+            password: "hashedpassword", // In a real app, this would be properly hashed
+            created_at: new Date(),
+            updated_at: new Date()
           };
         }
         return null;
       }
       
       const query = `
-        SELECT id, first_name as firstName, last_name as lastName, email, password
+        SELECT id, first_name, last_name, email, password, created_at, updated_at
         FROM users
         WHERE email = ?
       `;
@@ -355,21 +374,21 @@ class DatabaseConnection {
   }
   
   // Add a new user
-  public async addUser(userData: Omit<User, 'id'>): Promise<{ insertId: number }> {
+  public async addUser(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<{ insertId: number }> {
     try {
       if (typeof window !== 'undefined') {
         console.log('Adding user (browser simulation):', userData);
         return { insertId: Math.floor(Math.random() * 1000) };
       }
       
-      const { firstName, lastName, email, password } = userData;
+      const { first_name, last_name, email, password } = userData;
       const query = `
         INSERT INTO users 
         (first_name, last_name, email, password)
         VALUES (?, ?, ?, ?)
       `;
       
-      return this.executeQuery<{ insertId: number }>(query, [firstName, lastName, email, password]);
+      return this.executeQuery<{ insertId: number }>(query, [first_name, last_name, email, password]);
     } catch (error) {
       console.error('Error adding user:', error);
       throw error;
@@ -386,14 +405,53 @@ class DatabaseConnection {
       
       const query = `
         SELECT 
-          id, name, image, price, rating, category, description, 
-          is_sale as isSale, sale_percentage as salePercentage
+          id, name, image_url, price, rating, category, description, 
+          is_sale, sale_percentage, created_at, updated_at
         FROM products
       `;
       
       return this.executeQuery<Product[]>(query);
     } catch (error) {
       console.error('Error fetching products:', error);
+      return [];
+    }
+  }
+
+  // Get categories
+  public async getCategories(): Promise<Category[]> {
+    try {
+      if (typeof window !== 'undefined') {
+        console.log('Fetching categories (browser simulation)');
+        // Return mock categories
+        return [
+          {
+            id: 'cat-1',
+            name: 'Food & Treats',
+            image_url: '/placeholder.svg',
+            product_count: 24,
+            created_at: new Date(),
+            updated_at: new Date()
+          },
+          {
+            id: 'cat-2',
+            name: 'Toys',
+            image_url: '/placeholder.svg',
+            product_count: 16,
+            created_at: new Date(),
+            updated_at: new Date()
+          }
+        ];
+      }
+      
+      const query = `
+        SELECT 
+          id, name, image_url, product_count, created_at, updated_at
+        FROM categories
+      `;
+      
+      return this.executeQuery<Category[]>(query);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
       return [];
     }
   }
@@ -417,7 +475,7 @@ export async function getAdoptionPets(): Promise<Pet[]> {
 
 export async function addPet(petData: {
   name: string;
-  image: string;
+  image_url: string;
   breed: string;
   age: string;
   location: string;
@@ -437,12 +495,16 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return db.getUserByEmail(email);
 }
 
-export async function addUser(userData: Omit<User, 'id'>): Promise<{ insertId: number }> {
+export async function addUser(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<{ insertId: number }> {
   return db.addUser(userData);
 }
 
 export async function getProducts(): Promise<Product[]> {
   return db.getProducts();
+}
+
+export async function getCategories(): Promise<Category[]> {
+  return db.getCategories();
 }
 
 // Export the database instance for direct access if needed

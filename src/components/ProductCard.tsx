@@ -8,37 +8,48 @@ import { Badge } from './ui/badge';
 export interface ProductCardProps {
   id: string;
   name: string;
-  image: string;
+  image?: string; // For backward compatibility
+  image_url?: string; // From database
   price: number;
   rating: number;
   category: string;
   isSale?: boolean;
+  is_sale?: boolean; // From database
   salePercentage?: number;
+  sale_percentage?: number; // From database
 }
 
 const ProductCard = ({ 
   id, 
   name, 
   image, 
+  image_url, 
   price, 
   rating, 
   category,
   isSale = false,
-  salePercentage = 0
+  is_sale = false,
+  salePercentage = 0,
+  sale_percentage = 0
 }: ProductCardProps) => {
-  const originalPrice = isSale ? price / (1 - salePercentage / 100) : price;
+  // Use database fields first, then fall back to the original props
+  const isOnSale = is_sale || isSale;
+  const discountPercentage = sale_percentage || salePercentage;
+  const imageSource = image_url || image || '/placeholder.svg';
+  
+  const originalPrice = isOnSale ? price / (1 - discountPercentage / 100) : price;
   
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 card-hover">
       <div className="relative">
         <img 
-          src={image} 
+          src={imageSource} 
           alt={name} 
           className="w-full h-48 object-contain bg-gray-50 p-2"
         />
-        {isSale && (
+        {isOnSale && (
           <Badge className="absolute top-3 right-3 bg-red-500">
-            {salePercentage}% OFF
+            {discountPercentage}% OFF
           </Badge>
         )}
         <Badge 
@@ -71,7 +82,7 @@ const ProductCard = ({
         <div className="flex justify-between items-center">
           <div className="flex items-end gap-1">
             <span className="font-bold text-lg">${price.toFixed(2)}</span>
-            {isSale && (
+            {isOnSale && (
               <span className="text-gray-400 text-sm line-through">${originalPrice.toFixed(2)}</span>
             )}
           </div>

@@ -109,57 +109,61 @@ export const productService = {
 // Auth service
 export const authService = {
   async login(email: string, password: string): Promise<User> {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const userData = await response.json();
+      localStorage.setItem('pawpals_user', JSON.stringify(userData));
+      
+      // Notify UI of auth state change
+      window.dispatchEvent(new Event('storage'));
+      return userData;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    const userData = await response.json();
-    localStorage.setItem('pawpals_user', JSON.stringify(userData));
-    return userData;
-  },
-
-  async signup(userData: { first_name: string, last_name: string, email: string, password: string }): Promise<User> {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Registration failed');
-    }
-
-    const newUser = await response.json();
-    localStorage.setItem('pawpals_user', JSON.stringify(newUser));
-    return newUser;
   },
 
   async register(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-    if (!response.ok) {
-      throw new Error('Registration failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Registration failed');
+      }
+
+      const newUser = await response.json();
+      localStorage.setItem('pawpals_user', JSON.stringify(newUser));
+      
+      // Notify UI of auth state change
+      window.dispatchEvent(new Event('storage'));
+      return newUser;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
+  },
 
-    const newUser = await response.json();
-    localStorage.setItem('pawpals_user', JSON.stringify(newUser));
-    return newUser;
+  // For backward compatibility
+  async signup(userData: { first_name: string, last_name: string, email: string, password: string }): Promise<User> {
+    return this.register(userData);
   },
 
   logout(): void {

@@ -60,67 +60,81 @@ const SignUp = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    console.log('Sign up form submitted with values:', values);
     setIsLoading(true);
     
     try {
-      // Try to use auth service for signup
+      // Try to register through the auth service
       try {
-        await authService.signup({
+        await authService.register({
           first_name: values.firstName,
           last_name: values.lastName,
           email: values.email,
           password: values.password
         });
-      } catch (apiError: any) {
-        console.error('Signup error:', apiError);
         
-        // If backend is not available, create a mock user in localStorage for development
-        if (apiError.code === 'ERR_NETWORK') {
-          // Store user data in localStorage (for development only)
+        console.log('Registration successful');
+        
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to PawPals! Your account has been created.",
+          variant: "default"
+        });
+        
+        // Redirect to homepage after successful registration
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+        
+      } catch (apiError: any) {
+        console.error('Signup API error:', apiError);
+        
+        // For development only: mock user creation if API not available
+        if (apiError.message && apiError.message.includes('Failed to fetch')) {
+          console.log('Creating mock user for development');
+          
+          // Create a mock user object
           const mockUser = {
             id: `user_${Date.now()}`,
             first_name: values.firstName,
             last_name: values.lastName,
-            email: values.email
+            email: values.email,
+            created_at: new Date(),
+            updated_at: new Date()
           };
           
-          // Create mock token
-          const mockToken = `dev_token_${Date.now()}`;
-          
           // Store in localStorage like the real auth service would
-          localStorage.setItem('pawpals_token', mockToken);
           localStorage.setItem('pawpals_user', JSON.stringify(mockUser));
           
           // Force storage event to update UI
           window.dispatchEvent(new Event('storage'));
+          
+          toast({
+            title: "Development Mode",
+            description: "Mock account created successfully!",
+            variant: "default"
+          });
+          
+          // Redirect to homepage
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
         } else {
-          // For other errors, rethrow to be caught by outer catch
+          // For other errors, show error toast
           throw apiError;
         }
       }
-      
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to PawPals! Your account has been created.",
-      });
-      
-      // Redirect to homepage after successful registration
-      setTimeout(() => {
-        navigate('/');
-      }, 500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup error:', error);
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: "There was a problem creating your account. Please try again.",
+        description: error.message || "There was a problem creating your account. Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
   }
-
   
   return (
     <div className="min-h-screen flex flex-col">

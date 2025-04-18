@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, MapPin } from 'lucide-react';
@@ -42,7 +41,6 @@ const LostPets = () => {
     fetchPets();
   }, [toast]);
 
-  // Filter pets based on search criteria
   const filteredPets = pets.filter(pet => {
     const matchesSearch = pet.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                        pet.breed.toLowerCase().includes(searchTerm.toLowerCase());
